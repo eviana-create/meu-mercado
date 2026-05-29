@@ -14,24 +14,27 @@ function NovaCompra() {
   const [carrinho, setCarrinho] = useState([]);
 
   /* ADICIONAR ITEM */
-  function adicionarItem(e) {
+  function adicionarItem() {
 
-    e.preventDefault();
-
-    if (!nome || !valor) {
+    if (!nome || !valor || !quantidade) {
       alert("Preencha todos os campos");
       return;
     }
 
+    const subtotal =
+      Number(valor) * Number(quantidade);
+
     const novoItem = {
-      id: Date.now(),
       nome,
       valor: Number(valor),
       quantidade: Number(quantidade),
-      subtotal: Number(valor) * Number(quantidade)
+      subtotal
     };
 
-    setCarrinho([...carrinho, novoItem]);
+    setCarrinho([
+      ...carrinho,
+      novoItem
+    ]);
 
     setNome("");
     setValor("");
@@ -40,64 +43,12 @@ function NovaCompra() {
   }
 
   /* REMOVER ITEM */
-  function removerItem(id) {
+  function removerItem(index) {
 
-    const novaLista = carrinho.filter(
-      item => item.id !== id
-    );
-
-    setCarrinho(novaLista);
-
-  }
-
-  /* AUMENTAR */
-  function aumentarQuantidade(id) {
-
-    const novaLista = carrinho.map(item => {
-
-      if (item.id === id) {
-
-        const novaQtd = item.quantidade + 1;
-
-        return {
-          ...item,
-          quantidade: novaQtd,
-          subtotal: novaQtd * item.valor
-        };
-
-      }
-
-      return item;
-
-    });
-
-    setCarrinho(novaLista);
-
-  }
-
-  /* DIMINUIR */
-  function diminuirQuantidade(id) {
-
-    const novaLista = carrinho.map(item => {
-
-      if (
-        item.id === id &&
-        item.quantidade > 1
-      ) {
-
-        const novaQtd = item.quantidade - 1;
-
-        return {
-          ...item,
-          quantidade: novaQtd,
-          subtotal: novaQtd * item.valor
-        };
-
-      }
-
-      return item;
-
-    });
+    const novaLista =
+      carrinho.filter(
+        (_, i) => i !== index
+      );
 
     setCarrinho(novaLista);
 
@@ -105,47 +56,47 @@ function NovaCompra() {
 
   /* TOTAL */
   const total = carrinho.reduce(
-    (acc, item) => acc + item.subtotal,
+    (acc, item) =>
+      acc + item.subtotal,
     0
   );
 
+  /* FINALIZAR */
   async function finalizarCompra() {
 
-  if (carrinho.length === 0) {
-    alert("Adicione itens");
-    return;
+    if (carrinho.length === 0) {
+      alert("Adicione itens");
+      return;
+    }
+
+    try {
+
+      const dataAtual = new Date();
+
+      await salvarCompra({
+
+        data:
+          dataAtual.toLocaleDateString("pt-BR"),
+
+        total,
+
+        itens: carrinho
+
+      });
+
+      alert("Compra salva!");
+
+      navigate("/compras");
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Erro ao salvar");
+
+    }
+
   }
-
-  try {
-
-    const dataAtual = new Date();
-
-    const compra = {
-
-      data:
-        dataAtual.toLocaleDateString("pt-BR"),
-
-      total,
-
-      itens: carrinho
-
-    };
-
-    await salvarCompra(compra);
-
-    alert("Compra salva com sucesso!");
-
-    navigate("/compras");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("Erro ao salvar");
-
-  }
-
-}
 
   return (
     <div
@@ -167,20 +118,18 @@ function NovaCompra() {
       </h1>
 
       {/* FORM */}
-      <form
-        onSubmit={adicionarItem}
+      <div
         style={{
           maxWidth: "600px",
           display: "flex",
           flexDirection: "column",
-          gap: "20px",
-          marginBottom: "40px"
+          gap: "15px"
         }}
       >
 
         <input
           type="text"
-          placeholder="Nome do produto"
+          placeholder="Produto"
           value={nome}
           onChange={(e) =>
             setNome(e.target.value)
@@ -188,8 +137,7 @@ function NovaCompra() {
           style={{
             padding: "15px",
             borderRadius: "10px",
-            border: "none",
-            fontSize: "16px"
+            border: "none"
           }}
         />
 
@@ -203,8 +151,7 @@ function NovaCompra() {
           style={{
             padding: "15px",
             borderRadius: "10px",
-            border: "none",
-            fontSize: "16px"
+            border: "none"
           }}
         />
 
@@ -218,15 +165,14 @@ function NovaCompra() {
           style={{
             padding: "15px",
             borderRadius: "10px",
-            border: "none",
-            fontSize: "16px"
+            border: "none"
           }}
         />
 
         <button
-          type="submit"
+          onClick={adicionarItem}
           style={{
-            background: "#2196f3",
+            background: "#4caf50",
             color: "#fff",
             padding: "15px",
             border: "none",
@@ -239,24 +185,25 @@ function NovaCompra() {
           ➕ Adicionar Item
         </button>
 
-      </form>
+      </div>
 
-      {/* CARRINHO */}
+      {/* LISTA */}
       <div
         style={{
+          marginTop: "40px",
           display: "grid",
           gap: "20px"
         }}
       >
 
-        {carrinho.map((item) => (
+        {carrinho.map((item, index) => (
 
           <div
-            key={item.id}
+            key={index}
             style={{
               background: "#1f1f1f",
               padding: "20px",
-              borderRadius: "18px"
+              borderRadius: "15px"
             }}
           >
 
@@ -265,80 +212,48 @@ function NovaCompra() {
             </h2>
 
             <p>
-              Quantidade: {item.quantidade}
+              Quantidade:
+              {" "}
+              {item.quantidade}
+            </p>
+
+            <p>
+              Valor:
+              {" "}
+              R$
+              {" "}
+              {item.valor.toFixed(2)}
             </p>
 
             <p
               style={{
                 color: "#4caf50",
-                fontSize: "22px",
                 fontWeight: "bold"
               }}
             >
-              R$ {item.subtotal.toFixed(2)}
+              Subtotal:
+              {" "}
+              R$
+              {" "}
+              {item.subtotal.toFixed(2)}
             </p>
 
-            <div
+            <button
+              onClick={() =>
+                removerItem(index)
+              }
               style={{
-                display: "flex",
-                gap: "10px",
-                flexWrap: "wrap",
-                marginTop: "15px"
+                marginTop: "10px",
+                background: "#f44336",
+                color: "#fff",
+                border: "none",
+                padding: "10px 15px",
+                borderRadius: "10px",
+                cursor: "pointer"
               }}
             >
-
-              <button
-                onClick={() =>
-                  aumentarQuantidade(item.id)
-                }
-                style={{
-                  background: "#4caf50",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  fontWeight: "bold"
-                }}
-              >
-                ➕
-              </button>
-
-              <button
-                onClick={() =>
-                  diminuirQuantidade(item.id)
-                }
-                style={{
-                  background: "#ff9800",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  fontWeight: "bold"
-                }}
-              >
-                ➖
-              </button>
-
-              <button
-                onClick={() =>
-                  removerItem(item.id)
-                }
-                style={{
-                  background: "#f44336",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  fontWeight: "bold"
-                }}
-              >
-                🗑️ Remover
-              </button>
-
-            </div>
+              🗑️ Remover
+            </button>
 
           </div>
 
@@ -352,24 +267,27 @@ function NovaCompra() {
           marginTop: "40px",
           background: "#1f1f1f",
           padding: "25px",
-          borderRadius: "18px"
+          borderRadius: "20px"
         }}
       >
 
-        <h2
+        <h1
           style={{
-            color: "#4caf50",
-            fontSize: "35px"
+            color: "#4caf50"
           }}
         >
-          TOTAL: R$ {total.toFixed(2)}
-        </h2>
+          💰 Total:
+          {" "}
+          R$
+          {" "}
+          {total.toFixed(2)}
+        </h1>
 
         <button
           onClick={finalizarCompra}
           style={{
             marginTop: "20px",
-            background: "#4caf50",
+            background: "#2196f3",
             color: "#fff",
             border: "none",
             padding: "15px 25px",

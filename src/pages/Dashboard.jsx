@@ -34,11 +34,20 @@ function Dashboard() {
 
   /* TOTAL GASTO */
   const totalGasto = compras.reduce(
-    (acc, item) => acc + item.valor,
+    (acc, item) => {
+
+      const valorFinal =
+        item.total ||
+        item.valor ||
+        0;
+
+      return acc + Number(valorFinal);
+
+    },
     0
   );
 
-  /* TOTAL DE ITENS */
+  /* TOTAL DE COMPRAS */
   const totalItens = compras.length;
 
   /* MÉDIA */
@@ -129,7 +138,7 @@ function Dashboard() {
 
         </div>
 
-        {/* ITENS */}
+        {/* COMPRAS */}
         <div
           style={{
             background: "#1f1f1f",
@@ -211,20 +220,20 @@ function Dashboard() {
           ➕ Nova Compra
         </Link>
 
-       <Link
-  to="/compras"
-  style={{
-    background: "#2196f3",
-    color: "#fff",
-    padding: "15px 25px",
-    borderRadius: "12px",
-    textDecoration: "none",
-    fontWeight: "bold",
-    fontSize: "17px"
-  }}
->
-  📋 Ver Compras
-</Link>
+        <Link
+          to="/compras"
+          style={{
+            background: "#2196f3",
+            color: "#fff",
+            padding: "15px 25px",
+            borderRadius: "12px",
+            textDecoration: "none",
+            fontWeight: "bold",
+            fontSize: "17px"
+          }}
+        >
+          📋 Ver Compras
+        </Link>
 
       </div>
 
