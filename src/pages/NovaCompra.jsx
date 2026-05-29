@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { salvarCompra } from "../services/comprasService";
@@ -13,6 +13,72 @@ function NovaCompra() {
 
   const [carrinho, setCarrinho] = useState([]);
 
+  const [historicoProdutos, setHistoricoProdutos] = useState([]);
+
+  /* CARREGAR HISTÓRICO */
+  useEffect(() => {
+
+    const produtosSalvos = JSON.parse(
+      localStorage.getItem(
+        "historicoProdutos"
+      )
+    ) || [];
+
+    setHistoricoProdutos(
+      produtosSalvos
+    );
+
+  }, []);
+
+  function definirCategoria(produto) {
+
+  const nomeProduto =
+    produto.toLowerCase();
+
+  /* MERCEARIA */
+  if (
+    nomeProduto.includes("arroz") ||
+    nomeProduto.includes("feij") ||
+    nomeProduto.includes("macarr") ||
+    nomeProduto.includes("farinha") ||
+    nomeProduto.includes("açucar")
+  ) {
+    return "🛒 Mercearia";
+  }
+
+  /* BEBIDAS */
+  if (
+    nomeProduto.includes("coca") ||
+    nomeProduto.includes("suco") ||
+    nomeProduto.includes("agua") ||
+    nomeProduto.includes("refrigerante")
+  ) {
+    return "🥤 Bebidas";
+  }
+
+  /* HORTIFRUTI */
+  if (
+    nomeProduto.includes("banana") ||
+    nomeProduto.includes("maçã") ||
+    nomeProduto.includes("batata") ||
+    nomeProduto.includes("tomate")
+  ) {
+    return "🥬 Hortifruti";
+  }
+
+  /* LIMPEZA */
+  if (
+    nomeProduto.includes("detergente") ||
+    nomeProduto.includes("sabão") ||
+    nomeProduto.includes("amaciante")
+  ) {
+    return "🧼 Limpeza";
+  }
+
+  return "📦 Outros";
+
+}
+
   /* ADICIONAR ITEM */
   function adicionarItem() {
 
@@ -21,20 +87,75 @@ function NovaCompra() {
       return;
     }
 
-    const subtotal =
-      Number(valor) * Number(quantidade);
+    const itemExistente = carrinho.find(
+      (item) =>
+        item.nome.toLowerCase() ===
+        nome.toLowerCase()
+    );
 
-    const novoItem = {
-      nome,
-      valor: Number(valor),
-      quantidade: Number(quantidade),
-      subtotal
-    };
+    if (itemExistente) {
 
-    setCarrinho([
-      ...carrinho,
-      novoItem
-    ]);
+      const novaLista = carrinho.map((item) => {
+
+        if (
+          item.nome.toLowerCase() ===
+          nome.toLowerCase()
+        ) {
+
+          const novaQuantidade =
+            item.quantidade + Number(quantidade);
+
+          return {
+            ...item,
+            quantidade: novaQuantidade,
+            subtotal:
+              novaQuantidade * item.valor
+          };
+
+        }
+
+        return item;
+
+      });
+
+      setCarrinho(novaLista);
+
+    } else {
+
+      const subtotal =
+        Number(valor) * Number(quantidade);
+
+      const novoItem = {
+        nome,
+        valor: Number(valor),
+        quantidade: Number(quantidade),
+        subtotal,
+        categoria: definirCategoria(nome)
+      };
+
+      setCarrinho([
+        ...carrinho,
+        novoItem
+      ]);
+
+    }
+
+    /* SALVAR HISTÓRICO */
+    const produtosAtualizados = [
+      ...new Set([
+        ...historicoProdutos,
+        nome
+      ])
+    ];
+
+    setHistoricoProdutos(
+      produtosAtualizados
+    );
+
+    localStorage.setItem(
+      "historicoProdutos",
+      JSON.stringify(produtosAtualizados)
+    );
 
     setNome("");
     setValor("");
@@ -51,6 +172,53 @@ function NovaCompra() {
       );
 
     setCarrinho(novaLista);
+
+  }
+
+  /* EDITAR ITEM */
+  function editarItem(index) {
+
+    const item = carrinho[index];
+
+    setNome(item.nome);
+    setValor(item.valor);
+    setQuantidade(item.quantidade);
+
+    removerItem(index);
+
+  }
+
+  /* AUMENTAR */
+  function aumentarQuantidade(index) {
+
+    const novaLista = [...carrinho];
+
+    novaLista[index].quantidade += 1;
+
+    novaLista[index].subtotal =
+      novaLista[index].quantidade *
+      novaLista[index].valor;
+
+    setCarrinho(novaLista);
+
+  }
+
+  /* DIMINUIR */
+  function diminuirQuantidade(index) {
+
+    const novaLista = [...carrinho];
+
+    if (novaLista[index].quantidade > 1) {
+
+      novaLista[index].quantidade -= 1;
+
+      novaLista[index].subtotal =
+        novaLista[index].quantidade *
+        novaLista[index].valor;
+
+      setCarrinho(novaLista);
+
+    }
 
   }
 
@@ -141,6 +309,48 @@ function NovaCompra() {
           }}
         />
 
+        {/* AUTOCOMPLETE */}
+        {nome.length > 0 && (
+
+          <div
+            style={{
+              background: "#1f1f1f",
+              borderRadius: "10px",
+              overflow: "hidden"
+            }}
+          >
+
+            {historicoProdutos
+              .filter((produto) =>
+                produto
+                  .toLowerCase()
+                  .includes(
+                    nome.toLowerCase()
+                  )
+              )
+              .map((produto, index) => (
+
+                <div
+                  key={index}
+                  onClick={() =>
+                    setNome(produto)
+                  }
+                  style={{
+                    padding: "12px",
+                    cursor: "pointer",
+                    borderBottom:
+                      "1px solid #333"
+                  }}
+                >
+                  🛒 {produto}
+                </div>
+
+              ))}
+
+          </div>
+
+        )}
+
         <input
           type="number"
           placeholder="Valor"
@@ -211,11 +421,72 @@ function NovaCompra() {
               🛒 {item.nome}
             </h2>
 
-            <p>
-              Quantidade:
-              {" "}
-              {item.quantidade}
+            <p
+              style={{
+                color: "#ff9800",
+                fontWeight: "bold"
+              }}
+            >
+              {item.categoria}
             </p>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                marginTop: "10px"
+              }}
+            >
+
+              <button
+                onClick={() =>
+                  diminuirQuantidade(index)
+                }
+                style={{
+                  background: "#f44336",
+                  color: "#fff",
+                  border: "none",
+                  width: "35px",
+                  height: "35px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "18px"
+                }}
+              >
+                -
+              </button>
+
+              <span
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "bold"
+                }}
+              >
+                {item.quantidade}
+              </span>
+
+              <button
+                onClick={() =>
+                  aumentarQuantidade(index)
+                }
+                style={{
+                  background: "#4caf50",
+                  color: "#fff",
+                  border: "none",
+                  width: "35px",
+                  height: "35px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "18px"
+                }}
+              >
+                +
+              </button>
+
+            </div>
 
             <p>
               Valor:
@@ -238,22 +509,47 @@ function NovaCompra() {
               {item.subtotal.toFixed(2)}
             </p>
 
-            <button
-              onClick={() =>
-                removerItem(index)
-              }
+            <div
               style={{
-                marginTop: "10px",
-                background: "#f44336",
-                color: "#fff",
-                border: "none",
-                padding: "10px 15px",
-                borderRadius: "10px",
-                cursor: "pointer"
+                display: "flex",
+                gap: "10px",
+                marginTop: "15px"
               }}
             >
-              🗑️ Remover
-            </button>
+
+              <button
+                onClick={() =>
+                  editarItem(index)
+                }
+                style={{
+                  background: "#ff9800",
+                  color: "#fff",
+                  border: "none",
+                  padding: "10px 15px",
+                  borderRadius: "10px",
+                  cursor: "pointer"
+                }}
+              >
+                ✏️ Editar
+              </button>
+
+              <button
+                onClick={() =>
+                  removerItem(index)
+                }
+                style={{
+                  background: "#f44336",
+                  color: "#fff",
+                  border: "none",
+                  padding: "10px 15px",
+                  borderRadius: "10px",
+                  cursor: "pointer"
+                }}
+              >
+                🗑️ Remover
+              </button>
+
+            </div>
 
           </div>
 
