@@ -137,6 +137,80 @@ function Dashboard() {
       0
     );
 
+    /* GASTO HOJE */
+const hoje = new Date().toLocaleDateString("pt-BR");
+
+const gastoHoje = compras.reduce(
+  (acc, compra) => {
+
+    if (compra.data === hoje) {
+      return acc + Number(compra.total || 0);
+    }
+
+    return acc;
+
+  },
+  0
+);
+
+/* ÚLTIMA COMPRA */
+const ultimaCompra =
+  compras.length > 0
+    ? compras
+        .sort((a, b) => {
+
+          const [diaA, mesA, anoA] =
+            a.data.split("/");
+
+          const [diaB, mesB, anoB] =
+            b.data.split("/");
+
+          const dataA = new Date(
+            anoA,
+            mesA - 1,
+            diaA
+          );
+
+          const dataB = new Date(
+            anoB,
+            mesB - 1,
+            diaB
+          );
+
+          return dataB - dataA;
+
+        })[0]
+    : null;
+
+/* CATEGORIA FAVORITA */
+const contadorCategorias = {};
+
+compras.forEach((compra) => {
+
+  compra.itens?.forEach((item) => {
+
+    const categoria =
+      item.categoria || "Outros";
+
+    contadorCategorias[categoria] =
+      (contadorCategorias[categoria] || 0) +
+      item.quantidade;
+
+  });
+
+});
+
+const categoriaFavorita =
+  Object.keys(contadorCategorias).length > 0
+    ? Object.keys(contadorCategorias).reduce(
+        (a, b) =>
+          contadorCategorias[a] >
+          contadorCategorias[b]
+            ? a
+            : b
+      )
+    : "Nenhuma";
+
   return (
     <div
       style={{
@@ -190,6 +264,84 @@ function Dashboard() {
           marginBottom: "50px"
         }}
       >
+
+        <div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#00bcd4",
+      marginBottom: "15px"
+    }}
+  >
+    💵 Gasto Hoje
+  </h2>
+
+  <h1>
+    R$ {gastoHoje.toFixed(2)}
+  </h1>
+</div>
+
+<div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#8bc34a",
+      marginBottom: "15px"
+    }}
+  >
+    🕒 Última Compra
+  </h2>
+
+  {ultimaCompra ? (
+    <>
+      <p>{ultimaCompra.data}</p>
+
+      <h3>
+        R$ {Number(
+          ultimaCompra.total || 0
+        ).toFixed(2)}
+      </h3>
+
+      <p>
+        {ultimaCompra.itens?.length || 0}
+        {" "}itens
+      </p>
+    </>
+  ) : (
+    <p>Nenhuma compra</p>
+  )}
+</div>
+
+<div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#e91e63",
+      marginBottom: "15px"
+    }}
+  >
+    🏆 Categoria Favorita
+  </h2>
+
+  <h3>
+    {categoriaFavorita}
+  </h3>
+</div>
 
         {/* TOTAL GASTO */}
         <div
