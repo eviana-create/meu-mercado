@@ -8,6 +8,7 @@ import {
 function Compras() {
 
   const [compras, setCompras] = useState([]);
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
 
@@ -55,6 +56,23 @@ function Compras() {
 
   }
 
+  const comprasFiltradas = compras.filter(
+  (compra) => {
+
+    if (!busca) return true;
+
+    return compra.itens?.some(
+      (item) =>
+        item.nome
+          .toLowerCase()
+          .includes(
+            busca.toLowerCase()
+          )
+    );
+
+  }
+);
+
   return (
     <div
       style={{
@@ -75,6 +93,24 @@ function Compras() {
         📋 Histórico de Compras
       </h1>
 
+      <input
+        type="text"
+        placeholder="🔍 Buscar produto..."
+        value={busca}
+        onChange={(e) =>
+          setBusca(e.target.value)
+        }
+        style={{
+          width: "100%",
+          maxWidth: "500px",
+          padding: "15px",
+          borderRadius: "12px",
+          border: "none",
+          marginBottom: "30px",
+          fontSize: "16px"
+        }}
+      />
+
       <p
         style={{
           color: "#ccc",
@@ -91,7 +127,7 @@ function Compras() {
         }}
       >
 
-        {compras.map((compra) => (
+        {comprasFiltradas.map((compra) => (
 
           <div
             key={compra.id}
