@@ -34,16 +34,8 @@ function Dashboard() {
 
   /* TOTAL GASTO */
   const totalGasto = compras.reduce(
-    (acc, item) => {
-
-      const valorFinal =
-        item.total ||
-        item.valor ||
-        0;
-
-      return acc + Number(valorFinal);
-
-    },
+    (acc, compra) =>
+      acc + Number(compra.total || 0),
     0
   );
 
@@ -55,6 +47,95 @@ function Dashboard() {
     totalItens > 0
       ? totalGasto / totalItens
       : 0;
+
+  /* MÊS ATUAL */
+  const mesAtual = new Date().getMonth();
+  const anoAtual = new Date().getFullYear();
+
+  /* GASTO DO MÊS */
+  const gastoMes = compras.reduce(
+    (acc, compra) => {
+
+      if (!compra.data) return acc;
+
+      try {
+
+        const [dia, mes, ano] =
+          compra.data.split("/");
+
+        const dataCompra =
+          new Date(
+            Number(ano),
+            Number(mes) - 1,
+            Number(dia)
+          );
+
+        if (
+          dataCompra.getMonth() === mesAtual &&
+          dataCompra.getFullYear() === anoAtual
+        ) {
+
+          return (
+            acc +
+            Number(compra.total || 0)
+          );
+
+        }
+
+      } catch {
+
+        return acc;
+
+      }
+
+      return acc;
+
+    },
+    0
+  );
+
+  /* CONTADOR DE PRODUTOS */
+  const contadorProdutos = {};
+
+  compras.forEach((compra) => {
+
+    if (!compra.itens) return;
+
+    compra.itens.forEach((item) => {
+
+      const nomeProduto =
+        item.nome || "Sem nome";
+
+      const quantidade =
+        Number(item.quantidade || 1);
+
+      contadorProdutos[nomeProduto] =
+        (contadorProdutos[nomeProduto] || 0) +
+        quantidade;
+
+    });
+
+  });
+
+  /* MAIS COMPRADO */
+  const produtoMaisComprado =
+    Object.keys(contadorProdutos).length > 0
+      ? Object.keys(contadorProdutos).reduce(
+          (a, b) =>
+            contadorProdutos[a] >
+            contadorProdutos[b]
+              ? a
+              : b
+        )
+      : "Nenhum";
+
+  /* TOTAL DE PRODUTOS */
+  const totalProdutos =
+    Object.values(contadorProdutos).reduce(
+      (acc, qtd) =>
+        acc + Number(qtd || 0),
+      0
+    );
 
   return (
     <div
@@ -110,7 +191,7 @@ function Dashboard() {
         }}
       >
 
-        {/* TOTAL */}
+        {/* TOTAL GASTO */}
         <div
           style={{
             background: "#1f1f1f",
@@ -118,7 +199,6 @@ function Dashboard() {
             borderRadius: "20px"
           }}
         >
-
           <h2
             style={{
               color: "#4caf50",
@@ -128,14 +208,9 @@ function Dashboard() {
             💰 Total Gasto
           </h2>
 
-          <h1
-            style={{
-              fontSize: "45px"
-            }}
-          >
+          <h1>
             R$ {totalGasto.toFixed(2)}
           </h1>
-
         </div>
 
         {/* COMPRAS */}
@@ -146,7 +221,6 @@ function Dashboard() {
             borderRadius: "20px"
           }}
         >
-
           <h2
             style={{
               color: "#2196f3",
@@ -156,14 +230,9 @@ function Dashboard() {
             🛒 Compras
           </h2>
 
-          <h1
-            style={{
-              fontSize: "45px"
-            }}
-          >
+          <h1>
             {totalItens}
           </h1>
-
         </div>
 
         {/* MÉDIA */}
@@ -174,7 +243,6 @@ function Dashboard() {
             borderRadius: "20px"
           }}
         >
-
           <h2
             style={{
               color: "#ff9800",
@@ -184,14 +252,61 @@ function Dashboard() {
             📊 Média
           </h2>
 
-          <h1
-            style={{
-              fontSize: "45px"
-            }}
-          >
+          <h1>
             R$ {media.toFixed(2)}
           </h1>
+        </div>
 
+        {/* GASTO DO MÊS */}
+        <div
+          style={{
+            background: "#1f1f1f",
+            padding: "30px",
+            borderRadius: "20px"
+          }}
+        >
+          <h2
+            style={{
+              color: "#9c27b0",
+              marginBottom: "15px"
+            }}
+          >
+            📅 Gasto do Mês
+          </h2>
+
+          <h1>
+            R$ {gastoMes.toFixed(2)}
+          </h1>
+        </div>
+
+        {/* MAIS COMPRADO */}
+        <div
+          style={{
+            background: "#1f1f1f",
+            padding: "30px",
+            borderRadius: "20px"
+          }}
+        >
+          <h2
+            style={{
+              color: "#ff5722",
+              marginBottom: "15px"
+            }}
+          >
+            🥇 Mais Comprado
+          </h2>
+
+          <h3>
+            {produtoMaisComprado}
+          </h3>
+
+          <p>
+            📦 Total de produtos:
+            {" "}
+            <strong>
+              {totalProdutos}
+            </strong>
+          </p>
         </div>
 
       </div>
@@ -213,8 +328,7 @@ function Dashboard() {
             padding: "15px 25px",
             borderRadius: "12px",
             textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "17px"
+            fontWeight: "bold"
           }}
         >
           ➕ Nova Compra
@@ -228,8 +342,7 @@ function Dashboard() {
             padding: "15px 25px",
             borderRadius: "12px",
             textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "17px"
+            fontWeight: "bold"
           }}
         >
           📋 Ver Compras
