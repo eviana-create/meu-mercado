@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import GraficosGastosMes from "../components/GraficosGastosMes";
 import GraficosCategorias from "../components/GraficosCategorias";
+import GraficosCompras from "../components/GraficosCompras";
 
 import {
   collection,
@@ -635,6 +636,7 @@ compras.forEach((compra) => {
 
       <GraficosGastosMes compras={compras} />
       <GraficosCategorias compras={compras} />
+      <GraficosCompras compras={compras} />
 
       {/* BOTÕES */}
       <div
