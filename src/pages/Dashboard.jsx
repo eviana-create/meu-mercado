@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import GraficosGastosMes from "../components/GraficosGastosMes";
+import GraficosCategorias from "../components/GraficosCategorias";
 
 import {
   collection,
@@ -633,6 +634,7 @@ compras.forEach((compra) => {
       </div>
 
       <GraficosGastosMes compras={compras} />
+      <GraficosCategorias compras={compras} />
 
       {/* BOTÕES */}
       <div
