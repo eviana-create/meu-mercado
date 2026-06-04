@@ -15,6 +15,8 @@ import { db } from "../firebase/firebaseConfig";
 function Dashboard() {
 
   const [compras, setCompras] = useState([]);
+  const [periodo, setPeriodo] = useState("todos");
+  const [metaMensal, setMetaMensal] = useState(1500);
 
   useEffect(() => {
 
@@ -36,15 +38,102 @@ function Dashboard() {
 
   }, []);
 
+    function converterData(dataString) {
+
+  const [dia, mes, ano] =
+    dataString.split("/");
+
+  return new Date(
+    Number(ano),
+    Number(mes) - 1,
+    Number(dia)
+  );
+
+}
+
+    const hojeData = new Date();
+
+const comprasFiltradas =
+  compras.filter((compra) => {
+
+    if (!compra.data)
+      return false;
+
+    const dataCompra =
+      converterData(compra.data);
+
+    switch (periodo) {
+
+      case "hoje":
+
+        return (
+          dataCompra.toLocaleDateString(
+            "pt-BR"
+          ) ===
+          hojeData.toLocaleDateString(
+            "pt-BR"
+          )
+        );
+
+      case "7dias": {
+
+        const limite =
+          new Date();
+
+        limite.setDate(
+          limite.getDate() - 7
+        );
+
+        return dataCompra >= limite;
+
+      }
+
+      case "30dias": {
+
+        const limite =
+          new Date();
+
+        limite.setDate(
+          limite.getDate() - 30
+        );
+
+        return dataCompra >= limite;
+
+      }
+
+      case "mes":
+
+        return (
+          dataCompra.getMonth() ===
+            hojeData.getMonth() &&
+          dataCompra.getFullYear() ===
+            hojeData.getFullYear()
+        );
+
+      case "ano":
+
+        return (
+          dataCompra.getFullYear() ===
+          hojeData.getFullYear()
+        );
+
+      default:
+
+        return true;
+
+    }
+
+  });
+
   /* TOTAL GASTO */
-  const totalGasto = compras.reduce(
+  const totalGasto = comprasFiltradas.reduce(
     (acc, compra) =>
       acc + Number(compra.total || 0),
     0
   );
 
   /* TOTAL DE COMPRAS */
-  const totalItens = compras.length;
+  const totalItens = comprasFiltradas.length;
 
   /* MÉDIA */
   const media =
@@ -57,7 +146,7 @@ function Dashboard() {
   const anoAtual = new Date().getFullYear();
 
   /* GASTO DO MÊS */
-  const gastoMes = compras.reduce(
+  const gastoMes = comprasFiltradas.reduce(
     (acc, compra) => {
 
       if (!compra.data) return acc;
@@ -98,10 +187,18 @@ function Dashboard() {
     0
   );
 
+    const percentualMeta =
+    metaMensal > 0
+      ? (gastoMes / metaMensal) * 100
+      : 0;
+
+    const restanteMeta =
+      metaMensal - gastoMes;
+
   /* CONTADOR DE PRODUTOS */
   const contadorProdutos = {};
 
-  compras.forEach((compra) => {
+  comprasFiltradas.forEach((compra) => {
 
     if (!compra.itens) return;
 
@@ -159,9 +256,8 @@ const gastoHoje = compras.reduce(
 
 /* ÚLTIMA COMPRA */
 const ultimaCompra =
-  compras.length > 0
-    ? compras
-        .sort((a, b) => {
+  comprasFiltradas.length > 0
+    ? comprasFiltradas.sort((a, b) => {
 
           const [diaA, mesA, anoA] =
             a.data.split("/");
@@ -189,7 +285,7 @@ const ultimaCompra =
 /* CATEGORIA FAVORITA */
 const contadorCategorias = {};
 
-compras.forEach((compra) => {
+comprasFiltradas.forEach((compra) => {
 
   compra.itens?.forEach((item) => {
 
@@ -218,8 +314,8 @@ const categoriaFavorita =
     /* MAIOR COMPRA */
 
 const maiorCompra =
-  compras.length > 0
-    ? compras.reduce((maior, atual) =>
+  comprasFiltradas.length > 0
+    ? comprasFiltradas.reduce((maior, atual) =>
         Number(atual.total || 0) >
         Number(maior.total || 0)
           ? atual
@@ -231,7 +327,7 @@ const maiorCompra =
 
 let produtoMaisCaro = null;
 
-compras.forEach((compra) => {
+comprasFiltradas.forEach((compra) => {
 
   compra.itens?.forEach((item) => {
 
@@ -255,7 +351,7 @@ let economiaTotal = 0;
 
 const historicoPrecos = {};
 
-compras.forEach((compra) => {
+comprasFiltradas.forEach((compra) => {
 
   compra.itens?.forEach((item) => {
 
@@ -291,6 +387,15 @@ compras.forEach((compra) => {
   });
 
 });
+
+    const nomePeriodo = {
+  todos: "Todos",
+  hoje: "Hoje",
+  "7dias": "Últimos 7 dias",
+  "30dias": "Últimos 30 dias",
+  mes: "Este mês",
+  ano: "Este ano"
+};
 
   return (
     <div
@@ -335,7 +440,181 @@ compras.forEach((compra) => {
 
       </div>
 
+      <div
+  style={{
+    marginTop: "20px"
+  }}
+>
+  <label
+    style={{
+      display: "block",
+      marginBottom: "10px",
+      color: "#ccc"
+    }}
+  >
+    📅 Filtrar período
+  </label>
+
+  <select
+    value={periodo}
+    onChange={(e) =>
+      setPeriodo(e.target.value)
+    }
+    style={{
+      padding: "12px",
+      borderRadius: "10px",
+      border: "none",
+      background: "#1f1f1f",
+      color: "#fff",
+      minWidth: "220px"
+    }}
+  >
+    <option value="todos">
+      Todos
+    </option>
+
+    <option value="hoje">
+      Hoje
+    </option>
+
+    <option value="7dias">
+      Últimos 7 dias
+    </option>
+
+    <option value="30dias">
+      Últimos 30 dias
+    </option>
+
+    <option value="mes">
+      Este mês
+    </option>
+
+    <option value="ano">
+      Este ano
+    </option>
+
+  </select>
+</div>
+
+      <div
+  style={{
+    marginTop: "20px"
+  }}
+>
+  <label
+    style={{
+      display: "block",
+      marginBottom: "10px",
+      color: "#ccc"
+    }}
+  >
+    </label>
+
+  {/* RESUMO DO FILTRO */}
+  <div
+    style={{
+      marginTop: "15px",
+      color: "#ccc",
+      fontSize: "14px"
+    }}
+  >
+    <p>
+      📊 Exibindo: {comprasFiltradas.length} compras
+    </p>
+
+    <p>
+      📅 Filtro: {nomePeriodo[periodo]}
+    </p>
+  </div>
+
+</div><br></br>
+
       {/* CARDS */}
+
+    <div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#00e676",
+      marginBottom: "15px"
+    }}
+  >
+    🎯 Meta Mensal
+  </h2>
+
+  <p>
+    Meta:
+    {" "}
+    R$ {metaMensal.toFixed(2)}
+  </p>
+
+  <p>
+    Gasto:
+    {" "}
+    R$ {gastoMes.toFixed(2)}
+  </p>
+
+  <div
+    style={{
+      background: "#333",
+      height: "15px",
+      borderRadius: "10px",
+      overflow: "hidden",
+      marginTop: "10px"
+    }}
+  >
+    <div
+      style={{
+        width: `${Math.min(
+          percentualMeta,
+          100
+        )}%`,
+        height: "100%",
+        background:
+          percentualMeta > 100
+            ? "#f44336"
+            : "#4caf50"
+      }}
+    />
+  </div>
+
+  <p
+    style={{
+      marginTop: "10px"
+    }}
+  >
+    {percentualMeta.toFixed(0)}%
+    utilizado
+  </p>
+
+  {restanteMeta >= 0 ? (
+    <p>
+      Restam
+      {" "}
+      R$ {restanteMeta.toFixed(2)}
+    </p>
+  ) : (
+    <p
+      style={{
+        color: "#f44336"
+      }}
+    >
+      Excedeu em
+      {" "}
+      R$
+      {" "}
+      {Math.abs(
+        restanteMeta
+      ).toFixed(2)}
+    </p>
+  )}
+</div><br></br>
+
       <div
         style={{
           display: "grid",
@@ -634,9 +913,9 @@ compras.forEach((compra) => {
 
       </div>
 
-      <GraficosGastosMes compras={compras} />
-      <GraficosCategorias compras={compras} />
-      <GraficosCompras compras={compras} />
+      <GraficosGastosMes compras={comprasFiltradas} />
+      <GraficosCategorias compras={comprasFiltradas} />
+      <GraficosCompras compras={comprasFiltradas} />
 
       {/* BOTÕES */}
       <div
