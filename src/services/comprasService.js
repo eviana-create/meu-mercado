@@ -145,3 +145,32 @@ export async function excluirCompra(id) {
   await deleteDoc(compraDoc);
 
 }
+
+export async function buscarUltimoPreco(nomeProduto) {
+
+  const snapshot = await getDocs(comprasRef);
+
+  let ultimoPreco = null;
+
+  snapshot.docs.forEach((docItem) => {
+
+    const compra = docItem.data();
+
+    compra.itens?.forEach((item) => {
+
+      if (
+        item.nome.toLowerCase() ===
+        nomeProduto.toLowerCase()
+      ) {
+
+        ultimoPreco = item.valor;
+
+      }
+
+    });
+
+  });
+
+  return ultimoPreco;
+
+}

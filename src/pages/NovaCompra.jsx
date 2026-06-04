@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { salvarCompra } from "../services/comprasService";
+import { salvarCompra, buscarUltimoPreco} from "../services/comprasService";
 
 function NovaCompra() {
 
@@ -80,12 +80,40 @@ function NovaCompra() {
 }
 
   /* ADICIONAR ITEM */
-  function adicionarItem() {
+  async function adicionarItem() {
 
     if (!nome || !valor || !quantidade) {
       alert("Preencha todos os campos");
       return;
     }
+
+    const ultimoPreco =
+  await buscarUltimoPreco(nome);
+
+if (
+  ultimoPreco !== null &&
+  Number(valor) !== Number(ultimoPreco)
+) {
+
+  const diferenca =
+    Number(valor) -
+    Number(ultimoPreco);
+
+  if (diferenca > 0) {
+
+    alert(
+      `⚠️ Este produto aumentou R$ ${diferenca.toFixed(2)}`
+    );
+
+  } else {
+
+    alert(
+      `✅ Este produto ficou R$ ${Math.abs(diferenca).toFixed(2)} mais barato`
+    );
+
+  }
+
+}
 
     const itemExistente = carrinho.find(
       (item) =>

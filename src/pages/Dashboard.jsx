@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import GraficosGastosMes from "../components/GraficosGastosMes";
+
 import {
   collection,
   onSnapshot
@@ -211,6 +213,83 @@ const categoriaFavorita =
       )
     : "Nenhuma";
 
+    /* MAIOR COMPRA */
+
+const maiorCompra =
+  compras.length > 0
+    ? compras.reduce((maior, atual) =>
+        Number(atual.total || 0) >
+        Number(maior.total || 0)
+          ? atual
+          : maior
+      )
+    : null;
+
+/* PRODUTO MAIS CARO */
+
+let produtoMaisCaro = null;
+
+compras.forEach((compra) => {
+
+  compra.itens?.forEach((item) => {
+
+    if (
+      !produtoMaisCaro ||
+      Number(item.valor) >
+        Number(produtoMaisCaro.valor)
+    ) {
+
+      produtoMaisCaro = item;
+
+    }
+
+  });
+
+});
+
+/* ECONOMIA DETECTADA */
+
+let economiaTotal = 0;
+
+const historicoPrecos = {};
+
+compras.forEach((compra) => {
+
+  compra.itens?.forEach((item) => {
+
+    const nome =
+      item.nome.toLowerCase();
+
+    const precoAtual =
+      Number(item.valor);
+
+    if (
+      historicoPrecos[nome] !== undefined
+    ) {
+
+      const precoAnterior =
+        historicoPrecos[nome];
+
+      if (
+        precoAtual < precoAnterior
+      ) {
+
+        economiaTotal +=
+          (precoAnterior -
+            precoAtual) *
+          Number(item.quantidade || 1);
+
+      }
+
+    }
+
+    historicoPrecos[nome] =
+      precoAtual;
+
+  });
+
+});
+
   return (
     <div
       style={{
@@ -264,6 +343,96 @@ const categoriaFavorita =
           marginBottom: "50px"
         }}
       >
+
+        <div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#ffc107",
+      marginBottom: "15px"
+    }}
+  >
+    🏆 Maior Compra
+  </h2>
+
+  {maiorCompra ? (
+    <>
+      <p>{maiorCompra.data}</p>
+
+      <h1>
+        R$ {Number(
+          maiorCompra.total
+        ).toFixed(2)}
+      </h1>
+    </>
+  ) : (
+    <p>Nenhuma compra</p>
+  )}
+</div>
+
+<div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#00e5ff",
+      marginBottom: "15px"
+    }}
+  >
+    💎 Produto Mais Caro
+  </h2>
+
+  {produtoMaisCaro ? (
+    <>
+      <h3>
+        {produtoMaisCaro.nome}
+      </h3>
+
+      <h1>
+        R$ {Number(
+          produtoMaisCaro.valor
+        ).toFixed(2)}
+      </h1>
+    </>
+  ) : (
+    <p>Nenhum produto</p>
+  )}
+</div>
+
+<div
+  style={{
+    background: "#1f1f1f",
+    padding: "30px",
+    borderRadius: "20px"
+  }}
+>
+  <h2
+    style={{
+      color: "#4caf50",
+      marginBottom: "15px"
+    }}
+  >
+    📉 Economia Detectada
+  </h2>
+
+  <h1>
+    R$ {economiaTotal.toFixed(2)}
+  </h1>
+
+  <p>
+    Comparando preços mais baratos
+    encontrados ao longo do tempo.
+  </p>
+</div>
 
         <div
   style={{
@@ -462,6 +631,8 @@ const categoriaFavorita =
         </div>
 
       </div>
+
+      <GraficosGastosMes compras={compras} />
 
       {/* BOTÕES */}
       <div
