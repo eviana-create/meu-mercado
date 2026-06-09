@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../services/authService";
 
 import GraficosGastosMes from "../components/GraficosGastosMes";
 import GraficosCategorias from "../components/GraficosCategorias";
@@ -17,6 +19,7 @@ function Dashboard() {
   const [compras, setCompras] = useState([]);
   const [periodo, setPeriodo] = useState("todos");
   const [metaMensal, setMetaMensal] = useState(1500);
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -37,6 +40,24 @@ function Dashboard() {
     return () => unsubscribe();
 
   }, []);
+
+    async function sair() {
+
+  try {
+
+    await logout();
+
+    navigate("/login");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Erro ao sair");
+
+  }
+
+}
 
     function converterData(dataString) {
 
@@ -409,6 +430,21 @@ comprasFiltradas.forEach((compra) => {
     >
 
       {/* TOPO */}
+
+      <button
+  onClick={sair}
+  style={{
+    background: "#f44336",
+    color: "#fff",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "bold"
+  }}
+>
+  🚪 Logout
+</button>
       <div
         style={{
           marginBottom: "40px"
