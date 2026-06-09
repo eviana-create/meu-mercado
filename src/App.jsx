@@ -4,28 +4,58 @@ import Dashboard from "./pages/Dashboard";
 import NovaCompra from "./pages/NovaCompra";
 import Compras from "./pages/Compras";
 
+import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
 
   return (
+
     <Routes>
 
       <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      <Route
+        path="/cadastro"
+        element={<Cadastro />}
+      />
+
+      <Route
         path="/"
-        element={<Dashboard />}
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/nova-compra"
-        element={<NovaCompra />}
+        element={
+          <ProtectedRoute>
+            <NovaCompra />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/compras"
-        element={<Compras />}
+        element={
+          <ProtectedRoute>
+            <Compras />
+          </ProtectedRoute>
+        }
       />
 
     </Routes>
+
   );
+
 }
 
 export default App;

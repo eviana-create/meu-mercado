@@ -1,12 +1,5 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc
-} from "firebase/firestore";
-
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { query, where } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 const comprasRef = collection(db, "compras");
@@ -97,10 +90,19 @@ export async function salvarCompra(compra) {
 }
 
 /* LISTAR */
-export async function listarCompras() {
+export async function listarCompras(uid) {
+
+  const q = query(
+    comprasRef,
+    where(
+      "uid",
+      "==",
+      uid
+    )
+  );
 
   const snapshot =
-    await getDocs(comprasRef);
+    await getDocs(q);
 
   const compras = snapshot.docs.map(
     (docItem) => ({

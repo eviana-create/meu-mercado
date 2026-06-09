@@ -547,6 +547,23 @@ comprasFiltradas.forEach((compra) => {
     🎯 Meta Mensal
   </h2>
 
+  <input
+  type="number"
+  value={metaMensal}
+  onChange={(e) =>
+    setMetaMensal(
+      Number(e.target.value)
+    )
+  }
+  style={{
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "8px",
+    border: "none"
+  }}
+/>
+
   <p>
     Meta:
     {" "}

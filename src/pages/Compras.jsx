@@ -5,22 +5,35 @@ import {
   excluirCompra
 } from "../services/comprasService";
 
+import { useAuth }
+  from "../context/AuthContext";
+
 function Compras() {
+
+  const {
+  usuario
+  } = useAuth();
 
   const [compras, setCompras] = useState([]);
   const [busca, setBusca] = useState("");
 
   useEffect(() => {
 
+  if (usuario) {
+
     carregarCompras();
 
-  }, []);
+  }
+
+}, [usuario]);
 
   async function carregarCompras() {
 
     try {
 
-      const lista = await listarCompras();
+      const lista = await listarCompras(
+        usuario.uid
+        );
 
       setCompras(lista);
 

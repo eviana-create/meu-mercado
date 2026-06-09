@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { salvarCompra, buscarUltimoPreco} from "../services/comprasService";
+import { useAuth } from "../context/AuthContext";
 
 function NovaCompra() {
 
   const navigate = useNavigate();
 
+  const { usuario } = useAuth();
   const [nome, setNome] = useState("");
   const [valor, setValor] = useState("");
   const [quantidade, setQuantidade] = useState(1);
@@ -270,6 +272,9 @@ if (
       const dataAtual = new Date();
 
       await salvarCompra({
+
+        uid:
+          usuario.uid,
 
         data:
           dataAtual.toLocaleDateString("pt-BR"),
