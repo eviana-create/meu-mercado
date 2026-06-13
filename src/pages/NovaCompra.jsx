@@ -89,7 +89,7 @@ function NovaCompra() {
       return;
     }
 
-    const ultimoPreco =
+   const ultimoPreco =
   await buscarUltimoPreco(nome);
 
 if (

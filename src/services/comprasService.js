@@ -10,9 +10,10 @@ export async function salvarCompra(compra) {
   const snapshot = await getDocs(comprasRef);
 
   const compraExistente = snapshot.docs.find(
-    (docItem) =>
-      docItem.data().data === compra.data
-  );
+  (docItem) =>
+    docItem.data().data === compra.data &&
+    docItem.data().uid === compra.uid
+);
 
   if (compraExistente) {
 

@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import {
-  createUserWithEmailAndPassword
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { sendEmailVerification } from "firebase/auth";
 
 import { auth } from "../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
 
 function Cadastro() {
 
+  const [confirmarSenha, setConfirmarSenha] =
+  useState("");
+  
   const navigate =
     useNavigate();
 
@@ -21,31 +24,84 @@ function Cadastro() {
   const [senha, setSenha] =
     useState("");
 
+  const emailValido =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  const senhaForte =
+    /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
   async function cadastrar() {
 
-    try {
+  if (nome.trim().length < 3) {
 
-      await createUserWithEmailAndPassword(
-        auth,
-        email,
-        senha
-      );
+    alert(
+      "Informe um nome válido"
+    );
 
-      alert(
-        "Conta criada com sucesso!"
-      );
-
-      navigate("/");
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(error.message);
-
-    }
+    return;
 
   }
+
+  if (!emailValido.test(email)) {
+
+    alert(
+      "Informe um email válido"
+    );
+
+    return;
+
+  }
+
+  if (!senhaForte.test(senha)) {
+
+    alert(
+      "A senha deve ter pelo menos 8 caracteres e conter letras e números"
+    );
+
+    return;
+
+  }
+
+  if (senha !== confirmarSenha) {
+
+    alert(
+      "As senhas não coincidem"
+    );
+
+    return;
+
+  }
+
+  try {
+
+    const credencial =
+  await createUserWithEmailAndPassword(
+    auth,
+    email,
+    senha
+  );
+
+await sendEmailVerification(
+  credencial.user
+);
+
+await signOut(auth);
+
+alert(
+  "Conta criada com sucesso! Verifique seu email antes de entrar."
+);
+
+navigate("/login");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
 
   return (
 
@@ -127,6 +183,23 @@ function Cadastro() {
           }}
         />
 
+         <input
+          type="password"
+          placeholder="Confirmar senha"
+          value={confirmarSenha}
+          onChange={(e) =>
+            setConfirmarSenha(
+              e.target.value
+            )
+          }
+          style={{
+            width: "100%",
+            padding: "15px",
+            marginTop: "15px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        />
         <button
           onClick={cadastrar}
           style={{

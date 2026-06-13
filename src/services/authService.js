@@ -5,6 +5,9 @@ import {
 } from "firebase/auth";
 
 import { auth } from "../firebase/firebaseConfig";
+import {
+  signInAnonymously
+} from "firebase/auth";
 
 export async function login(
   email,
@@ -35,5 +38,13 @@ export async function cadastrar(
 export async function logout() {
 
   return await signOut(auth);
+
+}
+
+export async function loginVisitante() {
+
+  return await signInAnonymously(
+    auth
+  );
 
 }

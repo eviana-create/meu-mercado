@@ -12,6 +12,15 @@ import {
 import logoMeuMercado
   from "../assets/logo-meu-mercado.png";
 
+import { signOut } from "firebase/auth";
+
+import { auth }
+  from "../firebase/firebaseConfig";
+
+import {
+  loginVisitante
+} from "../services/authService";
+
 function Login() {
 
   const navigate =
@@ -25,26 +34,60 @@ function Login() {
 
   async function entrar() {
 
-    try {
+  try {
 
-      await login(
-        email,
-        senha
-      );
+    const credencial =
+  await login(email, senha);
 
-      navigate("/");
+const user =
+  credencial.user;
 
-    } catch (error) {
+await user.reload();
 
-      console.error(error);
+if (!user.emailVerified) {
 
-      alert(
-        "Email ou senha inválidos"
-      );
+  await signOut(auth);
 
-    }
+  alert(
+    "Confirme seu email antes de entrar."
+  );
+
+  return;
+}
+
+    navigate("/");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Email ou senha inválidos"
+    );
 
   }
+
+}
+
+async function entrarVisitante() {
+
+  try {
+
+    await loginVisitante();
+
+    navigate("/");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Erro ao entrar como visitante"
+    );
+
+  }
+
+}
 
   return (
 
@@ -200,20 +243,21 @@ function Login() {
   </Link>
 
   <button
-    style={{
-      width: "100%",
-      marginTop: "15px",
-      background: "#2196f3",
-      color: "#fff",
-      border: "none",
-      padding: "15px",
-      borderRadius: "12px",
-      fontWeight: "bold",
-      cursor: "pointer"
-    }}
-  >
-    👤 Entrar como Visitante
-  </button>
+  onClick={entrarVisitante}
+  style={{
+    width: "100%",
+    marginTop: "15px",
+    background: "#2196f3",
+    color: "#fff",
+    border: "none",
+    padding: "15px",
+    borderRadius: "12px",
+    fontWeight: "bold",
+    cursor: "pointer"
+  }}
+>
+  👤 Entrar como Visitante
+</button>
 
 </div>
 ```

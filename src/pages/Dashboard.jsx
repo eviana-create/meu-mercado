@@ -9,9 +9,14 @@ import GraficosCompras from "../components/GraficosCompras";
 
 import {
   collection,
-  onSnapshot
+  onSnapshot,
+  query,
+  where
 } from "firebase/firestore";
 
+import { useAuth }
+  from "../context/AuthContext";
+  
 import { db } from "../firebase/firebaseConfig";
 
 function Dashboard() {
@@ -20,26 +25,35 @@ function Dashboard() {
   const [periodo, setPeriodo] = useState("todos");
   const [metaMensal, setMetaMensal] = useState(1500);
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const visitante = usuario?.isAnonymous;
 
   useEffect(() => {
 
-    const unsubscribe = onSnapshot(
-      collection(db, "compras"),
-      (snapshot) => {
+  if (!usuario) return;
 
-        const lista = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+  const q = query(
+    collection(db, "compras"),
+    where("uid", "==", usuario.uid)
+  );
 
-        setCompras(lista);
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
 
-      }
-    );
+      const lista = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-    return () => unsubscribe();
+      setCompras(lista);
 
-  }, []);
+    }
+  );
+
+  return () => unsubscribe();
+
+}, [usuario]);
 
     async function sair() {
 
@@ -72,10 +86,10 @@ function Dashboard() {
 
 }
 
-    const hojeData = new Date();
+  const hojeData = new Date();
 
-const comprasFiltradas =
-  compras.filter((compra) => {
+  const comprasFiltradas =
+    compras.filter((compra) => {
 
     if (!compra.data)
       return false;
@@ -431,20 +445,21 @@ comprasFiltradas.forEach((compra) => {
 
       {/* TOPO */}
 
-      <button
-  onClick={sair}
-  style={{
-    background: "#f44336",
-    color: "#fff",
-    border: "none",
-    padding: "12px 20px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "bold"
-  }}
->
-  🚪 Logout
-</button>
+       <Link
+            to="/perfil"
+            style={{
+              background: "#ff9800",
+              color: "#fff",
+              padding: "15px 25px",
+              borderRadius: "12px",
+              textDecoration: "none",
+              fontWeight: "bold"
+            }}
+          >
+            👤 Perfil
+          </Link><br></br>
+        <br></br>
+      
       <div
         style={{
           marginBottom: "40px"
@@ -460,6 +475,44 @@ comprasFiltradas.forEach((compra) => {
           🛒 Meu Mercado
         </h1>
 
+      {
+  visitante && (
+
+    <div
+      style={{
+        background: "#ff9800",
+        color: "#fff",
+        padding: "20px",
+        borderRadius: "15px",
+        marginBottom: "25px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "15px"
+      }}
+    >
+
+      <h3>
+        👤 Modo Visitante
+      </h3>
+
+      <p>
+        Você está utilizando o Meu Mercado sem cadastro.
+        Seus dados podem ser perdidos caso troque de aparelho
+        ou limpe o navegador.
+      </p>
+
+      <Link to="/cadastro">
+
+        <button>
+          🚀 Criar Conta Grátis
+        </button>
+
+      </Link>
+
+    </div>
+
+  )
+}
         <p
           style={{
             color: "#ccc",
@@ -966,6 +1019,66 @@ comprasFiltradas.forEach((compra) => {
 
       </div>
 
+      <div
+  style={{
+    background: "#1f1f1f",
+    padding: "25px",
+    borderRadius: "18px",
+    marginTop: "25px"
+  }}
+>
+
+  <h2>
+    📊 Estatísticas de Gastos
+  </h2>
+
+  <p
+    style={{
+      color: "#ccc"
+    }}
+  >
+    Descubra quanto você gastou por mês,
+    categorias mais compradas e evolução
+    dos preços.
+  </p>
+
+  <button
+    onClick={() => {
+
+      if (usuario?.isAnonymous) {
+
+        alert(
+          "Crie uma conta gratuita para desbloquear as Estatísticas Avançadas."
+        );
+
+        return;
+
+      }
+
+      alert(
+        "Em breve 🚀"
+      );
+
+    }}
+    style={{
+      background: "#673ab7",
+      color: "#fff",
+      border: "none",
+      padding: "12px 20px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontWeight: "bold"
+    }}
+  >
+    {
+      usuario?.isAnonymous
+        ? "🔒 Recurso Premium"
+        : "📊 Ver Estatísticas"
+    }
+  </button>
+
+</div>
+
       <GraficosGastosMes compras={comprasFiltradas} />
       <GraficosCategorias compras={comprasFiltradas} />
       <GraficosCompras compras={comprasFiltradas} />
@@ -1007,6 +1120,19 @@ comprasFiltradas.forEach((compra) => {
           📋 Ver Compras
         </Link>
 
+          <Link
+            to="/historico-precos"
+            style={{
+              background: "#673ab7",
+              color: "#fff",
+              padding: "15px 25px",
+              borderRadius: "12px",
+              textDecoration: "none",
+              fontWeight: "bold"
+            }}
+          >
+            📈 Histórico de Preços
+          </Link>
       </div>
 
     </div>
