@@ -7,86 +7,10 @@ const comprasRef = collection(db, "compras");
 /* SALVAR OU ATUALIZAR COMPRA DO DIA */
 export async function salvarCompra(compra) {
 
-  const snapshot = await getDocs(comprasRef);
-
-  const compraExistente = snapshot.docs.find(
-  (docItem) =>
-    docItem.data().data === compra.data &&
-    docItem.data().uid === compra.uid
-);
-
-  if (compraExistente) {
-
-    const dadosAtuais =
-      compraExistente.data();
-
-    const itensExistentes =
-      dadosAtuais.itens || [];
-
-    const itensAtualizados = [
-      ...itensExistentes
-    ];
-
-    /* UNIR PRODUTOS REPETIDOS */
-    compra.itens.forEach((novoItem) => {
-
-      const indexExistente =
-        itensAtualizados.findIndex(
-          (item) =>
-            item.nome.toLowerCase() ===
-            novoItem.nome.toLowerCase()
-        );
-
-      if (indexExistente >= 0) {
-
-        itensAtualizados[indexExistente]
-          .quantidade += novoItem.quantidade;
-
-        itensAtualizados[indexExistente]
-          .subtotal =
-          itensAtualizados[indexExistente]
-            .quantidade *
-          itensAtualizados[indexExistente]
-            .valor;
-
-      } else {
-
-        itensAtualizados.push(
-          novoItem
-        );
-
-      }
-
-    });
-
-    /* RECALCULAR TOTAL */
-    const totalAtualizado =
-      itensAtualizados.reduce(
-        (acc, item) =>
-          acc + Number(item.subtotal || 0),
-        0
-      );
-
-    await updateDoc(
-      doc(
-        db,
-        "compras",
-        compraExistente.id
-      ),
-      {
-        itens: itensAtualizados,
-        total: totalAtualizado
-      }
-    );
-
-  } else {
-
-    await addDoc(
-      comprasRef,
-      compra
-    );
-
-  }
+  await addDoc(
+    comprasRef,
+    compra
+  );
 
 }
 
@@ -149,15 +73,28 @@ export async function excluirCompra(id) {
 
 }
 
-export async function buscarUltimoPreco(nomeProduto) {
+export async function buscarUltimoPreco(
+  nomeProduto,
+  uid
+) {
 
-  const snapshot = await getDocs(comprasRef);
+    console.log("UID recebido:", uid);
+    
+
+  const q = query(
+    comprasRef,
+    where("uid", "==", uid)
+  );
+
+  const snapshot =
+    await getDocs(q);
 
   let ultimoPreco = null;
 
   snapshot.docs.forEach((docItem) => {
 
-    const compra = docItem.data();
+    const compra =
+      docItem.data();
 
     compra.itens?.forEach((item) => {
 
@@ -173,6 +110,14 @@ export async function buscarUltimoPreco(nomeProduto) {
     });
 
   });
+
+
+  console.log(
+  "Produto:",
+  nomeProduto,
+  "Último preço:",
+  ultimoPreco
+);
 
   return ultimoPreco;
 

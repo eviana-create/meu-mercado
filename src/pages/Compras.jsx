@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { Link } from "react-router-dom";
 import {
   listarCompras,
   excluirCompra
@@ -123,6 +123,21 @@ function Compras() {
           fontSize: "16px"
         }}
       />
+      <br></br>
+            <Link
+              to="/nova-compra"
+              style={{
+                background: "#4caf50",
+                color: "#fff",
+                padding: "15px 25px",
+                borderRadius: "12px",
+                textDecoration: "none",
+                fontWeight: "bold"
+              }}
+            >
+              ➕ Nova Compra
+            </Link>
+            <br></br><br></br>
 
       <p
         style={{
@@ -279,6 +294,28 @@ function Compras() {
           </div>
 
         ))}
+
+         <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap"
+        }}
+      >
+            <Link
+              to="/nova-compra"
+              style={{
+                background: "#4caf50",
+                color: "#fff",
+                padding: "15px 25px",
+                borderRadius: "12px",
+                textDecoration: "none",
+                fontWeight: "bold"
+              }}
+            >
+              ➕ Nova Compra
+            </Link>
+            </div>
 
       </div>
 

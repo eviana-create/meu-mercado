@@ -84,13 +84,20 @@ function NovaCompra() {
   /* ADICIONAR ITEM */
   async function adicionarItem() {
 
+    if (!usuario?.uid) return;
+
     if (!nome || !valor || !quantidade) {
       alert("Preencha todos os campos");
       return;
     }
 
-   const ultimoPreco =
-  await buscarUltimoPreco(nome);
+const ultimoPreco =
+  usuario?.uid
+    ? await buscarUltimoPreco(
+        nome,
+        usuario.uid
+      )
+    : null;
 
 if (
   ultimoPreco !== null &&
@@ -223,9 +230,9 @@ if (
 
     const novaLista = [...carrinho];
 
-    novaLista[index].quantidade += 1;
+      novaLista[index].quantidade += 1;
 
-    novaLista[index].subtotal =
+      novaLista[index].subtotal =
       novaLista[index].quantidade *
       novaLista[index].valor;
 
@@ -240,9 +247,9 @@ if (
 
     if (novaLista[index].quantidade > 1) {
 
-      novaLista[index].quantidade -= 1;
+        novaLista[index].quantidade -= 1;
 
-      novaLista[index].subtotal =
+        novaLista[index].subtotal =
         novaLista[index].quantidade *
         novaLista[index].valor;
 
@@ -270,6 +277,32 @@ if (
     try {
 
       const dataAtual = new Date();
+
+      if (usuario?.isAnonymous) {
+
+        const totalCompras =
+          JSON.parse(
+            localStorage.getItem(
+              "contadorCompras"
+            )
+          ) || 0;
+
+        if (totalCompras >= 10) {
+
+          alert(
+            "Limite de 10 compras para visitantes. Crie uma conta gratuita."
+          );
+
+          return;
+
+        }
+
+        localStorage.setItem(
+          "contadorCompras",
+          totalCompras + 1
+  );
+
+}
 
       await salvarCompra({
 
