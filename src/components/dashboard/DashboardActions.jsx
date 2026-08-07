@@ -30,14 +30,18 @@ function DashboardActions() {
       style={{
         marginTop: "40px",
         marginBottom: "40px",
+        width: "100%",
+        overflow: "hidden",
       }}
     >
+      {/* TÍTULO */}
       <div style={{ marginBottom: "18px" }}>
         <h2
           style={{
             margin: 0,
             fontSize: "26px",
             fontWeight: "900",
+            color: "#fff",
           }}
         >
           ⚡ Ações rápidas
@@ -53,12 +57,14 @@ function DashboardActions() {
         </p>
       </div>
 
+      {/* BOTÕES */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(250px, 1fr))",
+            "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
           gap: "18px",
+          width: "100%",
         }}
       >
         {botoes.map((botao) => (
@@ -66,44 +72,69 @@ function DashboardActions() {
             key={botao.to}
             to={botao.to}
             style={{
+              boxSizing: "border-box",
+              width: "100%",
+              minWidth: 0,
               textDecoration: "none",
               color: "#fff",
+
               background:
                 "linear-gradient(145deg, #1e293b, #0f172a)",
+
               border: `1px solid ${botao.cor}`,
               borderRadius: "18px",
-              padding: "24px",
+
+              padding: "20px",
+
               display: "flex",
               alignItems: "center",
-              gap: "16px",
+              gap: "14px",
+
               boxShadow:
                 "0 10px 30px rgba(0,0,0,.20)",
+
               transition:
                 "transform .2s ease, box-shadow .2s ease",
             }}
           >
+            {/* ÍCONE */}
             <span
               style={{
-                width: "52px",
-                height: "52px",
+                width: "50px",
+                height: "50px",
+                minWidth: "50px",
                 flexShrink: 0,
+
                 borderRadius: "14px",
+
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: `${botao.cor}20`,
-                fontSize: "25px",
+
+                background:
+                  `${botao.cor}20`,
+
+                fontSize: "24px",
               }}
             >
               {botao.icone}
             </span>
 
-            <div>
+            {/* TEXTO */}
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               <strong
                 style={{
                   display: "block",
-                  fontSize: "18px",
+                  fontSize: "17px",
                   marginBottom: "5px",
+
+                  whiteSpace: "normal",
+                  overflowWrap: "break-word",
                 }}
               >
                 {botao.titulo}
@@ -111,19 +142,25 @@ function DashboardActions() {
 
               <span
                 style={{
+                  display: "block",
                   color: "#94a3b8",
-                  fontSize: "14px",
+                  fontSize: "13px",
+                  lineHeight: "1.4",
+
+                  overflowWrap: "break-word",
                 }}
               >
                 {botao.descricao}
               </span>
             </div>
 
+            {/* SETA */}
             <span
               style={{
-                marginLeft: "auto",
+                flexShrink: 0,
                 fontSize: "22px",
                 color: botao.cor,
+                marginLeft: "4px",
               }}
             >
               →
