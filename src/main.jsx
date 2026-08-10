@@ -9,6 +9,8 @@ import {
   AuthProvider
 } from "./context/AuthContext";
 
+import ScrollToTop from "./components/ScrollToTop";
+
 ReactDOM.createRoot(
   document.getElementById("root")
 ).render(
@@ -18,6 +20,8 @@ ReactDOM.createRoot(
     <AuthProvider>
 
       <BrowserRouter>
+
+        <ScrollToTop />
 
         <App />
 
