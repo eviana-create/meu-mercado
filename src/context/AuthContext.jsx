@@ -49,7 +49,8 @@ export function AuthProvider({
 
     <AuthContext.Provider
       value={{
-        usuario
+        usuario,
+        loading
       }}
     >
 

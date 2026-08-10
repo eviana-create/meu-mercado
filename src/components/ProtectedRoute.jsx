@@ -1,30 +1,21 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-import {
-  useAuth
-} from "../context/AuthContext";
+function ProtectedRoute({ children }) {
+const { usuario, loading } = useAuth();
 
-function ProtectedRoute({
-  children
-}) {
+// Aguarda o Firebase verificar a sessão
+if (loading) {
+return null;
+}
 
-  const {
-    usuario
-  } = useAuth();
+// Usuário não autenticado → envia para o login
+if (!usuario) {
+return <Navigate to="/login" replace />;
+}
 
-  if (!usuario) {
-
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-
-  }
-
-  return children;
-
+// Usuário autenticado → permite acesso
+return children;
 }
 
 export default ProtectedRoute;
